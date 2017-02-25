@@ -17,6 +17,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
+
+/*** Parse query strings ***/
+
 function qsAll(qs) {
 // Parse a query string (keep all occurrences of each key)
 	var obj = {}
@@ -30,7 +33,6 @@ function qsAll(qs) {
 	return obj;
 }
 
-
 function qsFirst(qs) {
 // Parse a query string (keep first occurrence of each key)
 	var k, obj = qsAll(qs);
@@ -39,8 +41,10 @@ function qsFirst(qs) {
 }
 
 
+/*** LaTeX operations using codecogs.com ***/
+
 function latex(elem, rerender) {
-/* Replace latex code by a rendered image (via codecogs.com)
+/* Replace latex code by a rendered image
 	elem = an element or sequence of elements to render, defaults to $(".latex")
 	rerender = if true, replace previously rendered iamges by rerendering
 */
@@ -49,25 +53,26 @@ function latex(elem, rerender) {
 		var e = $(elem[i]);
 		var img = e.find("img");
 		if (rerender || img.length == 0) {
-			var latex;
+			var lx;
 			var sz = "\\dpi{" + latex._dpi(e) + "}";
-			var html = img.length ? img.attr("data-latex") : e.html();
-			var color = e.attr("data-color").trim();
+			var html = img.length ? img.attr("alt") : e.html();
+			var color = e.attr("data-color");
 			if (color) {
+				color = color.trim();
 				if (color.charAt(0) == "{") color = "[RGB]" + color;
 				else color = "{" + color + "}";
-				latex = "{\\color" + color + html + "}";
+				lx = "{\\color" + color + html + "}";
 			}
-			else latex = html;
-			var src = "http://latex.codecogs.com/png.latex?" + encodeURIComponent(sz + latex);
-			e.html($("<img>").attr({src:src, alt:"Equation", "data-latex":html}));
+			else lx = html;
+			var src = "http://latex.codecogs.com/png.latex?" + encodeURIComponent(sz + lx);
+			e.html($("<img>").attr({src:src, alt:html}));
 		}
 	}
 }
 
 latex._elem = function(e) {
 // Create a sequence of elements from a null or single element argument 
-	if (e == null) e = $(".latex");
+	if (e == null) e = $(".LaTeX");
 	else if (!e[0]) e = [e];
 	return e;
 }
@@ -85,6 +90,32 @@ latex.unrender = function(elem) {
 	for (var i=0;i<elem.length;i++) {
 		var e = $(elem[i]);
 		var img = e.find("img");
-		if (img.length) e.html(img.attr("data-latex"));
+		if (img.length) e.html(img.attr("alt"));
 	}
+}
+
+
+/*** Scientific notation ***/
+
+function SciNot(x) {
+	if (!$.isNumeric(x)) throw("A number is required");
+	this.value = x = parseFloat(x);
+	var n = 0; //Math.floor(Math.log10(Math.abs(x)));
+	while (x >= 10) {n++; x /= 10}
+	while (x < 1) {n--; x *= 10}
+	this.coef = x;
+	this.exp = n;
+}
+
+SciNot.prototype.html = function(sd) {
+	var x = this.coef;
+	x = sd ? x.toPrecision(sd) : x.toString();
+	if (this.exp) x += " × 10 <sup>" + this.exp + "</sup>"
+	return x;
+}
+
+SciNot.prototype.altHtml = function(sd, minExp) {
+	if (minExp == null) minExp = -2;
+	if (this.exp >= minExp && this.exp < sd) return this.value.toPrecision(sd);
+	return this.html(sd);
 }
