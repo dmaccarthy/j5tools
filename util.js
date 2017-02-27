@@ -80,7 +80,7 @@ latex._elem = function(e) {
 latex._dpi = function(e) {
 // Calculate the image dpi corresponding to the specified data-zoom
 	var sz = e.attr("data-zoom");
-	sz = (96 / 16) * parseFloat(e.css("fontSize")) * (sz ? parseFloat(sz) : 1);
+	sz = (108 / 16) * parseFloat(e.css("fontSize")) * (sz ? parseFloat(sz) : 1);
 	return Math.round(sz);
 }
 
