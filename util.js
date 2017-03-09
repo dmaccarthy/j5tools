@@ -73,7 +73,7 @@ function latex(elem, rerender) {
 latex._elem = function(e) {
 // Create a sequence of elements from a null or single element argument 
 	if (e == null) e = $(".LaTeX");
-	else if (!e[0]) e = [e];
+	else if (!(e instanceof Array) && !e[0]) e = [e];
 	return e;
 }
 
